@@ -63,6 +63,11 @@ List of all functions and purposes:
 
 ---
 
+# Final Notes
+I expect this to be somewhat the "future" of open-source device unlocking & right-to-repair, as it can now be used in virtually any Python project! If you do use it, you can attribute a small message such as "nPhoneCLI provided by NlckySolutions (https://github.com/nlckysolutions)"
+
+---
+
 **That's about it! You can inspect the code in src/nphonecli/core.py! Remember, do not use this on devices you do not own or have explicit permission from the owner to unlock.** 
 
 > [!TIP]
