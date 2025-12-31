@@ -8,8 +8,9 @@ version = "1.5.0"
 description = "nPhoneKIT as an interfaceable and easy-to-implement Python PyPI package."
 readme = "README.md"
 requires-python = ">=3.9"
+
 authors = [
-  { name="NlckySolutions", email="contact@nlckysolutions.org" }
+  { name = "NlckySolutions", email = "contact@nlckysolutions.org" }
 ]
 
 license = { file = "LICENSE" }
@@ -18,16 +19,18 @@ classifiers = [
   "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
 ]
 
+keywords = ["nphonekit", "android", "fastboot", "cli", "phone", "frp"]
+
+dependencies = [
+  "pyserial>=3.5"
+]
+
 [project.urls]
 Homepage = "https://github.com/nlckysolutions/nPhoneCLI"
 Issues = "https://github.com/nlckysolutions/nPhoneCLI/issues"
 
-dependencies = [
-    "pyserial>=3.5"
-]
-
 [tool.setuptools]
-package-dir = {"" = "src"}
+package-dir = { "" = "src" }
 
 [tool.setuptools.packages.find]
 where = ["src"]
