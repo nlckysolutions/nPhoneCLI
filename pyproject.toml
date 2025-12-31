@@ -22,8 +22,6 @@ classifiers = [
 Homepage = "https://github.com/nlckysolutions/nPhoneCLI"
 Issues = "https://github.com/nlckysolutions/nPhoneCLI/issues"
 
-keywords = ["nphonekit", "android", "fastboot", "cli", "phone", "frp"]
-
 dependencies = [
     "pyserial>=3.5"
 ]
