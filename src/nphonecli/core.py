@@ -85,7 +85,7 @@ def load_strings(xml_path=None):
         #    xml_path = cwd_path
         #else:
         #    xml_path = files("myscript") / "strings.xml"
-        xml_path = files("myscript") / "strings.xml"
+        xml_path = files("nphonecli") / "strings.xml"
 
     tree = ET.parse(xml_path)
     root = tree.getroot()
