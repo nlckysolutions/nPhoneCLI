@@ -1,6 +1,8 @@
 # nPhoneCLI
 nPhoneKIT as a interfaceable and easy-to-implement Python PYPI package.
 
+[![PyPI Downloads](https://static.pepy.tech/personalized-badge/nphonecli?period=total&units=INTERNATIONAL_SYSTEM&left_color=BLACK&right_color=BLUE&left_text=downloads)](https://pepy.tech/projects/nphonecli)
+
 ---
 
 **Legal Warning: FRP Unlocking is only legal on your own devices. I am not responsible for misuse of this package. Only use it on your own devices.**
