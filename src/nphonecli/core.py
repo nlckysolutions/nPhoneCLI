@@ -149,14 +149,18 @@ class SerialManager: # AT command sender via class
         if not self.ser or not self.ser.is_open:
             raise ConnectionError(strings['noDeviceGenericError'])
         else:
+            print("SerialManager.send: ser.flushInput")
             self.ser.flushInput()
+            print("SerialManager.send: ser.flushOutput")
             self.ser.flushOutput()
+            print(f"SerialManager.send: ser.write: {command!r}")
             self.ser.write((command.strip() + '\r\n').encode())
             time.sleep(0.1)
 
             output = []
             while True:
                 line = self.ser.readline()
+                print(f"SerialManager.send: ser.readline -> {line!r}")
                 if not line:
                     break
                 output.append(line.decode(errors='ignore').strip())
