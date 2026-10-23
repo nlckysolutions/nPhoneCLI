@@ -288,13 +288,18 @@ class AT:
                     print(strings['deviceConCheckNotPlugged'])
     
 class ADBc: # ADB class for sending ADB commands if needed
+    adb_exe = 'adb'
     def send(command):
         rt()
+        subprocess.run([self.adb_exe, command], stderr=subprocess.STDOUT)
+        r'''
         if os_config == "LINUX":
-            os.system(f"sudo bash -c 'sudo adb {command} > tmp_output_adb.txt 2>&1'")
+            subprocess.run([self.adb_exe, command], stderr=subprocess.STDOUT)
+            # os.system(f"sudo bash -c 'sudo {self.adb_exe} {command} > tmp_output_adb.txt 2>&1'")
         elif os_config == "WINDOWS":
             with open('tmp_output.txt', 'w') as f:
-                subprocess.run(['adb', command], stdout=f, stderr=subprocess.STDOUT)
+                subprocess.run([self.adb_exe, command], stdout=f, stderr=subprocess.STDOUT)
+        '''
         time.sleep(0.5)
     
     def usbswitch(arg, action):
