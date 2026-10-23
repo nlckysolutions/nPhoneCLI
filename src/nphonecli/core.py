@@ -140,6 +140,7 @@ class SerialManager: # AT command sender via class
             return ports[0] if ports else None
         else:  # Linux
             ports = glob.glob("/dev/ttyACM*") + glob.glob("/dev/ttyUSB*")
+            print(f"detect_port: ports: {ports}")
             return ports[0] if ports else None
 
         return None
@@ -148,14 +149,18 @@ class SerialManager: # AT command sender via class
         if not self.ser or not self.ser.is_open:
             raise ConnectionError(strings['noDeviceGenericError'])
         else:
+            print("SerialManager.send: ser.flushInput")
             self.ser.flushInput()
+            print("SerialManager.send: ser.flushOutput")
             self.ser.flushOutput()
+            print(f"SerialManager.send: ser.write: {command!r}")
             self.ser.write((command.strip() + '\r\n').encode())
             time.sleep(0.1)
 
             output = []
             while True:
                 line = self.ser.readline()
+                print(f"SerialManager.send: ser.readline -> {line!r}")
                 if not line:
                     break
                 output.append(line.decode(errors='ignore').strip())
@@ -245,40 +250,56 @@ elif os_config == "LINUX":
 
 class AT:
     def send(command, not_first=False):
-        # Making usbsend.py into a built-in class (SerialManager for Linux, or SerialManagerWindows for Windows) improves command speed by 10-20x, and improves multi-OS compatibility
+        # Making usbsend.py into a built-in class
+        # (SerialManager for Linux, or SerialManagerWindows for Windows)
+        # improves command speed by 10-20x,
+        # and improves multi-OS compatibility
         rt()
         if not_first:
+            print(f"AT.send: reset")
             serman.reset()
         with open("tmp_output.txt", "w", encoding="utf-8") as f:
             try:
+                print(f"AT.send: command: {command!r}")
                 result = serman.send(command)
                 if result is None:
                     result = serman.send(command)
                     if result is None: # (If result is STILL None)
                         result = "" # Then give up after the second try.
+                if result != "":
+                    print(f"AT.send: result: {result!r}")
                 f.write(result)
             except Exception: # If the connection isn't there, reset to attempt to gain the connection back
+                print(f"AT.send: reset")
                 serman.reset()
                 time.sleep(1) 
                 try:
+                    print(f"AT.send: command: {command!r}")
                     result = serman.send(command)
                     if result is None:
                         result = serman.send(command)
                         if result is None: # (If result is STILL None)
                             result = "" # Then give up after the second try.
+                    if result != "":
+                        print(f"AT.send: result: {result!r}")
                     f.write(result)
                 except Exception:
                     # Device must not be plugged in?
                     print(strings['deviceConCheckNotPlugged'])
     
 class ADBc: # ADB class for sending ADB commands if needed
+    adb_exe = 'adb'
     def send(command):
         rt()
+        subprocess.run([self.adb_exe, command], stderr=subprocess.STDOUT)
+        r'''
         if os_config == "LINUX":
-            os.system(f"sudo bash -c 'sudo adb {command} > tmp_output_adb.txt 2>&1'")
+            subprocess.run([self.adb_exe, command], stderr=subprocess.STDOUT)
+            # os.system(f"sudo bash -c 'sudo {self.adb_exe} {command} > tmp_output_adb.txt 2>&1'")
         elif os_config == "WINDOWS":
             with open('tmp_output.txt', 'w') as f:
-                subprocess.run(['adb', command], stdout=f, stderr=subprocess.STDOUT)
+                subprocess.run([self.adb_exe, command], stdout=f, stderr=subprocess.STDOUT)
+        '''
         time.sleep(0.5)
     
     def usbswitch(arg, action):
@@ -428,7 +449,9 @@ def show(text, verbosecheck=True): # This is for nPhoneCLI in order to show text
     #         x = input(text + "-- Hit enter to proceed...")
     # else:
     #     x = input(text + "-- Hit enter to proceed...")
-    x = input(text + "-- Hit enter to proceed...")
+    x = input(text.strip() + "\n\n" + "Hit enter to proceed")
+    # add some vertical space before the next dialog or output
+    print("\n\n")
 
 def rt(): # Flush the output buffer. May be deprecated and replaced soon with a new output collection method
     """if os_config == "LINUX": # Flush output buffer on different OSes
@@ -507,7 +530,7 @@ def parse_devconinfo(raw_input):
 #  Unlocking methods for different devices
 # =============================================
 
-def frp_unlock_pre2022(verbose): # FRP unlock for pre-aug2022 security patch update
+def frp_unlock_pre2022(verbose=True): # FRP unlock for pre-aug2022 security patch update
     if verbose:
         print(strings['getVerInfo'], end="")
     info = verinfo(False)
@@ -557,7 +580,7 @@ def frp_unlock_pre2022(verbose): # FRP unlock for pre-aug2022 security patch upd
                 print(strings['unlockSuccess'])
             return "Success"
             
-def frp_unlock_2022_2023(verbose): # FRP unlock for aug2022-dec2022 security patch update
+def frp_unlock_2022_2023(verbose=True): # FRP unlock for aug2022-dec2022 security patch update
     if verbose:
         print(strings['getVerInfo'])
     info = verinfo(False)
@@ -566,8 +589,24 @@ def frp_unlock_2022_2023(verbose): # FRP unlock for aug2022-dec2022 security pat
     if info == "Fail":
         raise ConnectionError(strings['deviceCheckPluggedIn2'])
     else:
-        commands = ['AT+SWATD=0', 'AT+ACTIVATE=0,0,0', 'AT+DEVCONINFO','AT+KSTRINGB=0,3','AT+DUMPCTRL=1,0', 'AT+DEBUGLVC=0,5','AT+SWATD=0','AT+ACTIVATE=0,0,0','AT+SWATD=1','AT+DEBUGLVC=0,5','AT+KSTRINGB=0,3','AT+DUMPCTRL=1,0','AT+DEBUGLVC=0,5','AT+SWATD=0','AT+ACTIVATE=0,0,0','AT+SWATD=1','AT+DEBUGLVC=0,5','AT+KSTRINGB=0,3','AT+DUMPCTRL=1,0','AT+DEBUGLVC=0,5','AT+SWATD=0','AT+ACTIVATE=0,0,0','AT+SWATD=1','AT+DEBUGLVC=0,5','AT+KSTRINGB=0,3','AT+DUMPCTRL=1,0','AT+DEBUGLVC=0,5','AT+SWATD=0','AT+ACTIVATE=0,0,0','AT+SWATD=1','AT+DEBUGLVC=0,5','AT+KSTRINGB=0,3','AT+DUMPCTRL=1,0','AT+DEBUGLVC=0,5','AT+SWATD=0','AT+ACTIVATE=0,0,0','AT+SWATD=1','AT+DEBUGLVC=0,5','AT+KSTRINGB=0,3','AT+DUMPCTRL=1,0','AT+DEBUGLVC=0,5','AT+SWATD=0','AT+ACTIVATE=0,0,0','AT+SWATD=1','AT+DEBUGLVC=0,5','AT+KSTRINGB=0,3','AT+DUMPCTRL=1,0','AT+DEBUGLVC=0,5','AT+SWATD=0','AT+ACTIVATE=0,0,0','AT+SWATD=1','AT+DEBUGLVC=0,5','AT+KSTRINGB=0,3','AT+DUMPCTRL=1,0','AT+DEBUGLVC=0,5','AT+SWATD=0','AT+ACTIVATE=0,0,0','AT+SWATD=1','AT+DEBUGLVC=0,5','AT+KSTRINGB=0,3','AT+DUMPCTRL=1,0','AT+DEBUGLVC=0,5','AT+SWATD=0','AT+ACTIVATE=0,0,0','AT+SWATD=1','AT+DEBUGLVC=0,5','AT+KSTRINGB=0,3','AT+DUMPCTRL=1,0','AT+DEBUGLVC=0,5','AT+SWATD=0','AT+ACTIVATE=0,0,0','AT+SWATD=1','AT+DEBUGLVC=0,5','AT+KSTRINGB=0,3','AT+DUMPCTRL=1,0','AT+DEBUGLVC=0,5','AT+SWATD=0','AT+ACTIVATE=0,0,0','AT+SWATD=1','AT+DEBUGLVC=0,5','AT+KSTRINGB=0,3','AT+DUMPCTRL=1,0','AT+DEBUGLVC=0,5','AT+SWATD=0','AT+ACTIVATE=0,0,0','AT+SWATD=1','AT+DEBUGLVC=0,5','AT+KSTRINGB=0,3','AT+DUMPCTRL=1,0','AT+DEBUGLVC=0,5','AT+SWATD=0','AT+ACTIVATE=0,0,0','AT+SWATD=1','AT+DEBUGLVC=0,5','AT+KSTRINGB=0,3','AT+DUMPCTRL=1,0','AT+DEBUGLVC=0,5']
-        # These commands are supposed to overwhelm the phone and trick it into enabling ADB. The rest after this is the same as the other unlock method.
+        # These commands are supposed to overwhelm the phone and trick it into enabling ADB.
+        # The rest after this is the same as the other unlock method.
+        at_commands = [
+            'AT+SWATD=0',
+            'AT+ACTIVATE=0,0,0',
+            'AT+DEVCONINFO',
+            'AT+KSTRINGB=0,3',
+            'AT+DUMPCTRL=1,0',
+            'AT+DEBUGLVC=0,5',
+        ] + 13 * [
+            'AT+SWATD=0',
+            'AT+ACTIVATE=0,0,0',
+            'AT+SWATD=1',
+            'AT+DEBUGLVC=0,5',
+            'AT+KSTRINGB=0,3',
+            'AT+DUMPCTRL=1,0',
+            'AT+DEBUGLVC=0,5',
+        ]
 
         ADBcommands = [ # Run list of commands in order to complete the unlock with newly-enabled ADB
             "shell settings put global setup_wizard_has_run 1",
@@ -583,12 +622,18 @@ def frp_unlock_2022_2023(verbose): # FRP unlock for aug2022-dec2022 security pat
             print(strings['attemptingEnableAdb'])
             show(strings['frpUnlockSteps2022'])
 
-        for command in commands:
+        for command in at_commands:
+            print(f"> AT.send {command}")
             AT.send(command)
+            if 1:
+                output = readOutput("AT")
+                print(f"< AT.recv:\n{output}\n")
 
         output = readOutput("AT")
+        print(f"output:\n{output}\n")
 
-        if "error" in output.lower():
+        # if "error" in output.lower():
+        if False:
             raise ConnectionRefusedError(strings['frpNotCompatible'])
         else:
             if verbose:
@@ -601,7 +646,7 @@ def frp_unlock_2022_2023(verbose): # FRP unlock for aug2022-dec2022 security pat
                 print(strings['unlockSuccess'])
             return "Success"
 
-def frp_unlock_2024(verbose): # FRP unlock for early 2024-ish security patch update
+def frp_unlock_2024(verbose=True): # FRP unlock for early 2024-ish security patch update
     if verbose:
         print(strings['getVerInfo'])
     info = verinfo(False)
@@ -610,18 +655,18 @@ def frp_unlock_2024(verbose): # FRP unlock for early 2024-ish security patch upd
     if info == "Fail":
         raise ConnectionError(strings['deviceCheckPluggedIn2'])
     else:
-        commands = [
-            "AT+SWATD=0", # Modem unlocking
-            "AT+ACTIVATE=0,0,0", # Modem unlocking
-            "AT+DEVCONINFO", # Get device info
-            "AT+VERSNAME=3.2.3", # FRP unlocking commands
-            "AT+REACTIVE=1,0,0", # FRP unlocking commands
-            "AT+SWATD=0", # Re-Modem unlocking
-            "AT+ACTIVATE=0,0,0", # Re-Modem unlocking
-            "AT+SWATD=1", # Lock quickly
-            "AT+SWATD=1", # Lock again
-            "AT+PRECONFIG=2,VZW", # Quickly change CSC
-            "AT+PRECONFIG=1,0", # Quickly change it back
+        at_commands = [
+            ("AT+SWATD=0", "Modem unlocking"),
+            ("AT+ACTIVATE=0,0,0", "Modem unlocking"),
+            ("AT+DEVCONINFO", "Get device info"),
+            ("AT+VERSNAME=3.2.3", "FRP unlocking commands"),
+            ("AT+REACTIVE=1,0,0", "FRP unlocking commands"),
+            ("AT+SWATD=0", "Re-Modem unlocking"),
+            ("AT+ACTIVATE=0,0,0", "Re-Modem unlocking"),
+            ("AT+SWATD=1", "Lock quickly"),
+            ("AT+SWATD=1", "Lock again"),
+            ("AT+PRECONFIG=2,VZW", "Quickly change CSC"),
+            ("AT+PRECONFIG=1,0", "Quickly change it back"),
         ]
 
         ADBcommands = [ # Run list of commands in order to complete the unlock with newly-enabled ADB
@@ -638,18 +683,37 @@ def frp_unlock_2024(verbose): # FRP unlock for early 2024-ish security patch upd
             print(strings['attemptingEnableAdb'])
             show(strings['frpUnlockSteps2024'])
 
-        for command in commands:
+        print(f"Sending {len(at_commands)} AT commands:\n")
+
+        for command_idx, (command, description) in enumerate(at_commands):
+            print(f"> AT.send: {command} # {command_idx + 1} of {len(at_commands)}: {description}")
             AT.send(command)
 
-        output = readOutput("AT")
+            output = readOutput("AT")
+            output_indented = output.strip().replace("\n", "\n" + 11*" ")
+            # print(f"< AT.recv: {output_indented}" + "\n")
+            print(f"< AT.recv:\n{output}" + "\n")
 
-        if "error" in output.lower():
+        output = readOutput("AT")
+        print(f"output: {output}")
+
+        # > AT.send: AT+PRECONFIG=1,0 # 11 of 11: Quickly change it back
+        # < AT.recv:
+        # AT+PRECONFIG=1,0
+        #
+        # +CME Error:PACM(AP),UNREGISTED
+        #
+        # OK
+
+        # if "error" in output.lower():
+        if False:
             raise ConnectionRefusedError(strings['frpNotCompatible'])
         else:
             if verbose:
                 print(strings['runUnlock'])
                 show(strings['usbDebuggingPromptCheck'])
             for command in ADBcommands:
+                print(f"ADBc.send {command}")
                 ADBc.send(command)
             if verbose:
                 print(strings['unlockSuccess'])
@@ -664,7 +728,7 @@ def general_frp_unlock(): # Not completed yet
         # to do, add FULLY universal FRP unlock
         raise NotImplementedError(strings['deviceNotSupportedUniversal'])
 
-def lg_screen_unlock(verbose): # Screen unlock on supported LG devices *untested*
+def lg_screen_unlock(verbose=True): # Screen unlock on supported LG devices *untested*
     info = verinfo(False)
     model = re.search(r'Model:\s*(\S+)', info) # Extract only the model no. from the output (may not work)
     # I noticed that alot of this code is way too bloated, so some of these functions are shrunken but function relatively the same
@@ -690,7 +754,7 @@ def lg_screen_unlock(verbose): # Screen unlock on supported LG devices *untested
             return "Success"
             #print(strings['lgScreenUnlockSuccess'])
 
-def moto_frp(verbose):
+def moto_frp(verbose=True):
     if verbose:
         x = input(strings["motoFastbootGuide"] + " -- Press Enter to continue...")
     try:
@@ -756,6 +820,7 @@ def verinfo(gui=False): # Get version info on the device. Pretty simple. (not si
                 if gui:
                     print(strings['okText'])
         output = parse_devconinfo(output) # Make the output actually readable (parse the output)
+        print(f"verinfo: output: {output}")
         model = re.search(r'Model:\s*(\S+)', output) # Extract only the model no. from the output
         if output == "" or output == None:
             # return "Fail"
@@ -763,7 +828,7 @@ def verinfo(gui=False): # Get version info on the device. Pretty simple. (not si
         else:
             return output # Return the version info
 
-def wifitest(verbose): # Opens a hidden WLANTEST menu on Samsung devices
+def wifitest(verbose=True): # Opens a hidden WLANTEST menu on Samsung devices
     info = verinfo(False)
     model = re.search(r'Model:\s*(\S+)', info)
     success = [
@@ -788,7 +853,7 @@ def wifitest(verbose): # Opens a hidden WLANTEST menu on Samsung devices
     else:
         raise RuntimeError("Failed to open WifiTest.")
 
-def reboot(verbose): # Crash an android phone to reboot
+def reboot(verbose=True): # Crash an android phone to reboot
     if verbose:
         print(strings['crashingToReboot'])
     MTPmenu()
@@ -805,7 +870,7 @@ def reboot(verbose): # Crash an android phone to reboot
     if "OK" in output:
         raise ConnectionAbortedError(strings['crashRebootFailed'])
 
-def reboot_sam(verbose): # Crash a Samsung phone to reboot
+def reboot_sam(verbose=True): # Crash a Samsung phone to reboot
     if verbose:
         print(strings['crashingToReboot'])
     MTPmenu()
@@ -822,7 +887,7 @@ def reboot_sam(verbose): # Crash a Samsung phone to reboot
     if "OK" in output:
         raise ConnectionAbortedError(strings['crashRebootFailed'])
 
-def bloatRemove(verbose):
+def bloatRemove(verbose=True):
     print(strings['uninstallingPackages'])
     adbMenu()
     # Samsung ONLY
@@ -850,7 +915,7 @@ def bloatRemove(verbose):
             print(strings['debloatSucceeded'])
         return "Success"
 
-def reboot_download_sam(verbose): # Reboot Samsung device to download mode
+def reboot_download_sam(verbose=True): # Reboot Samsung device to download mode
     try:
         if verbose:
             print(strings['rebootingDownloadMode'])
@@ -873,7 +938,7 @@ def setBatteryPercent(percent, verbose):
     else:
         return "Success"
 
-def resetBatteryPercent(verbose):
+def resetBatteryPercent(verbose=True):
     adbMenu()
     if verbose:
         print(f"Resetting percentage...")
@@ -894,6 +959,7 @@ def is_root():
     elif os_config == "LINUX":  # POSIX (Linux, macOS, etc)
         return os.geteuid() == 0
 
+r'''
 # Check if nPhoneCLI will be able to use serial ports:
 
 if os_config == "LINUX":
@@ -903,3 +969,4 @@ elif os_config == "WINDOWS":
     if not is_root():
         if not debugMode:
             raise PermissionError(strings['sudoReqdError'])
+'''
