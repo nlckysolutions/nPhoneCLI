@@ -612,18 +612,18 @@ def frp_unlock_2024(verbose=True): # FRP unlock for early 2024-ish security patc
     if info == "Fail":
         raise ConnectionError(strings['deviceCheckPluggedIn2'])
     else:
-        commands = [
-            "AT+SWATD=0", # Modem unlocking
-            "AT+ACTIVATE=0,0,0", # Modem unlocking
-            "AT+DEVCONINFO", # Get device info
-            "AT+VERSNAME=3.2.3", # FRP unlocking commands
-            "AT+REACTIVE=1,0,0", # FRP unlocking commands
-            "AT+SWATD=0", # Re-Modem unlocking
-            "AT+ACTIVATE=0,0,0", # Re-Modem unlocking
-            "AT+SWATD=1", # Lock quickly
-            "AT+SWATD=1", # Lock again
-            "AT+PRECONFIG=2,VZW", # Quickly change CSC
-            "AT+PRECONFIG=1,0", # Quickly change it back
+        at_commands = [
+            ("AT+SWATD=0", "Modem unlocking"),
+            ("AT+ACTIVATE=0,0,0", "Modem unlocking"),
+            ("AT+DEVCONINFO", "Get device info"),
+            ("AT+VERSNAME=3.2.3", "FRP unlocking commands"),
+            ("AT+REACTIVE=1,0,0", "FRP unlocking commands"),
+            ("AT+SWATD=0", "Re-Modem unlocking"),
+            ("AT+ACTIVATE=0,0,0", "Re-Modem unlocking"),
+            ("AT+SWATD=1", "Lock quickly"),
+            ("AT+SWATD=1", "Lock again"),
+            ("AT+PRECONFIG=2,VZW", "Quickly change CSC"),
+            ("AT+PRECONFIG=1,0", "Quickly change it back"),
         ]
 
         ADBcommands = [ # Run list of commands in order to complete the unlock with newly-enabled ADB
@@ -640,18 +640,37 @@ def frp_unlock_2024(verbose=True): # FRP unlock for early 2024-ish security patc
             print(strings['attemptingEnableAdb'])
             show(strings['frpUnlockSteps2024'])
 
-        for command in commands:
+        print(f"Sending {len(at_commands)} AT commands:\n")
+
+        for command_idx, (command, description) in enumerate(at_commands):
+            print(f"> AT.send: {command} # {command_idx + 1} of {len(at_commands)}: {description}")
             AT.send(command)
 
-        output = readOutput("AT")
+            output = readOutput("AT")
+            output_indented = output.strip().replace("\n", "\n" + 11*" ")
+            # print(f"< AT.recv: {output_indented}" + "\n")
+            print(f"< AT.recv:\n{output}" + "\n")
 
-        if "error" in output.lower():
+        output = readOutput("AT")
+        print(f"output: {output}")
+
+        # > AT.send: AT+PRECONFIG=1,0 # 11 of 11: Quickly change it back
+        # < AT.recv:
+        # AT+PRECONFIG=1,0
+        #
+        # +CME Error:PACM(AP),UNREGISTED
+        #
+        # OK
+
+        # if "error" in output.lower():
+        if False:
             raise ConnectionRefusedError(strings['frpNotCompatible'])
         else:
             if verbose:
                 print(strings['runUnlock'])
                 show(strings['usbDebuggingPromptCheck'])
             for command in ADBcommands:
+                print(f"ADBc.send {command}")
                 ADBc.send(command)
             if verbose:
                 print(strings['unlockSuccess'])
