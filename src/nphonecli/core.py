@@ -507,7 +507,7 @@ def parse_devconinfo(raw_input):
 #  Unlocking methods for different devices
 # =============================================
 
-def frp_unlock_pre2022(verbose): # FRP unlock for pre-aug2022 security patch update
+def frp_unlock_pre2022(verbose=True): # FRP unlock for pre-aug2022 security patch update
     if verbose:
         print(strings['getVerInfo'], end="")
     info = verinfo(False)
@@ -557,7 +557,7 @@ def frp_unlock_pre2022(verbose): # FRP unlock for pre-aug2022 security patch upd
                 print(strings['unlockSuccess'])
             return "Success"
             
-def frp_unlock_2022_2023(verbose): # FRP unlock for aug2022-dec2022 security patch update
+def frp_unlock_2022_2023(verbose=True): # FRP unlock for aug2022-dec2022 security patch update
     if verbose:
         print(strings['getVerInfo'])
     info = verinfo(False)
@@ -601,7 +601,7 @@ def frp_unlock_2022_2023(verbose): # FRP unlock for aug2022-dec2022 security pat
                 print(strings['unlockSuccess'])
             return "Success"
 
-def frp_unlock_2024(verbose): # FRP unlock for early 2024-ish security patch update
+def frp_unlock_2024(verbose=True): # FRP unlock for early 2024-ish security patch update
     if verbose:
         print(strings['getVerInfo'])
     info = verinfo(False)
@@ -664,7 +664,7 @@ def general_frp_unlock(): # Not completed yet
         # to do, add FULLY universal FRP unlock
         raise NotImplementedError(strings['deviceNotSupportedUniversal'])
 
-def lg_screen_unlock(verbose): # Screen unlock on supported LG devices *untested*
+def lg_screen_unlock(verbose=True): # Screen unlock on supported LG devices *untested*
     info = verinfo(False)
     model = re.search(r'Model:\s*(\S+)', info) # Extract only the model no. from the output (may not work)
     # I noticed that alot of this code is way too bloated, so some of these functions are shrunken but function relatively the same
@@ -690,7 +690,7 @@ def lg_screen_unlock(verbose): # Screen unlock on supported LG devices *untested
             return "Success"
             #print(strings['lgScreenUnlockSuccess'])
 
-def moto_frp(verbose):
+def moto_frp(verbose=True):
     if verbose:
         x = input(strings["motoFastbootGuide"] + " -- Press Enter to continue...")
     try:
@@ -763,7 +763,7 @@ def verinfo(gui=False): # Get version info on the device. Pretty simple. (not si
         else:
             return output # Return the version info
 
-def wifitest(verbose): # Opens a hidden WLANTEST menu on Samsung devices
+def wifitest(verbose=True): # Opens a hidden WLANTEST menu on Samsung devices
     info = verinfo(False)
     model = re.search(r'Model:\s*(\S+)', info)
     success = [
@@ -788,7 +788,7 @@ def wifitest(verbose): # Opens a hidden WLANTEST menu on Samsung devices
     else:
         raise RuntimeError("Failed to open WifiTest.")
 
-def reboot(verbose): # Crash an android phone to reboot
+def reboot(verbose=True): # Crash an android phone to reboot
     if verbose:
         print(strings['crashingToReboot'])
     MTPmenu()
@@ -805,7 +805,7 @@ def reboot(verbose): # Crash an android phone to reboot
     if "OK" in output:
         raise ConnectionAbortedError(strings['crashRebootFailed'])
 
-def reboot_sam(verbose): # Crash a Samsung phone to reboot
+def reboot_sam(verbose=True): # Crash a Samsung phone to reboot
     if verbose:
         print(strings['crashingToReboot'])
     MTPmenu()
@@ -822,7 +822,7 @@ def reboot_sam(verbose): # Crash a Samsung phone to reboot
     if "OK" in output:
         raise ConnectionAbortedError(strings['crashRebootFailed'])
 
-def bloatRemove(verbose):
+def bloatRemove(verbose=True):
     print(strings['uninstallingPackages'])
     adbMenu()
     # Samsung ONLY
@@ -850,7 +850,7 @@ def bloatRemove(verbose):
             print(strings['debloatSucceeded'])
         return "Success"
 
-def reboot_download_sam(verbose): # Reboot Samsung device to download mode
+def reboot_download_sam(verbose=True): # Reboot Samsung device to download mode
     try:
         if verbose:
             print(strings['rebootingDownloadMode'])
@@ -873,7 +873,7 @@ def setBatteryPercent(percent, verbose):
     else:
         return "Success"
 
-def resetBatteryPercent(verbose):
+def resetBatteryPercent(verbose=True):
     adbMenu()
     if verbose:
         print(f"Resetting percentage...")
