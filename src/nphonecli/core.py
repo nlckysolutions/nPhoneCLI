@@ -820,6 +820,7 @@ def verinfo(gui=False): # Get version info on the device. Pretty simple. (not si
                 if gui:
                     print(strings['okText'])
         output = parse_devconinfo(output) # Make the output actually readable (parse the output)
+        print(f"verinfo: output: {output}")
         model = re.search(r'Model:\s*(\S+)', output) # Extract only the model no. from the output
         if output == "" or output == None:
             # return "Fail"
