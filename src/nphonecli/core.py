@@ -428,7 +428,9 @@ def show(text, verbosecheck=True): # This is for nPhoneCLI in order to show text
     #         x = input(text + "-- Hit enter to proceed...")
     # else:
     #     x = input(text + "-- Hit enter to proceed...")
-    x = input(text + "-- Hit enter to proceed...")
+    x = input(text.strip() + "\n\n" + "Hit enter to proceed")
+    # add some vertical space before the next dialog or output
+    print("\n\n")
 
 def rt(): # Flush the output buffer. May be deprecated and replaced soon with a new output collection method
     """if os_config == "LINUX": # Flush output buffer on different OSes
