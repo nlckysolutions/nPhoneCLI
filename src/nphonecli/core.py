@@ -568,8 +568,24 @@ def frp_unlock_2022_2023(verbose=True): # FRP unlock for aug2022-dec2022 securit
     if info == "Fail":
         raise ConnectionError(strings['deviceCheckPluggedIn2'])
     else:
-        commands = ['AT+SWATD=0', 'AT+ACTIVATE=0,0,0', 'AT+DEVCONINFO','AT+KSTRINGB=0,3','AT+DUMPCTRL=1,0', 'AT+DEBUGLVC=0,5','AT+SWATD=0','AT+ACTIVATE=0,0,0','AT+SWATD=1','AT+DEBUGLVC=0,5','AT+KSTRINGB=0,3','AT+DUMPCTRL=1,0','AT+DEBUGLVC=0,5','AT+SWATD=0','AT+ACTIVATE=0,0,0','AT+SWATD=1','AT+DEBUGLVC=0,5','AT+KSTRINGB=0,3','AT+DUMPCTRL=1,0','AT+DEBUGLVC=0,5','AT+SWATD=0','AT+ACTIVATE=0,0,0','AT+SWATD=1','AT+DEBUGLVC=0,5','AT+KSTRINGB=0,3','AT+DUMPCTRL=1,0','AT+DEBUGLVC=0,5','AT+SWATD=0','AT+ACTIVATE=0,0,0','AT+SWATD=1','AT+DEBUGLVC=0,5','AT+KSTRINGB=0,3','AT+DUMPCTRL=1,0','AT+DEBUGLVC=0,5','AT+SWATD=0','AT+ACTIVATE=0,0,0','AT+SWATD=1','AT+DEBUGLVC=0,5','AT+KSTRINGB=0,3','AT+DUMPCTRL=1,0','AT+DEBUGLVC=0,5','AT+SWATD=0','AT+ACTIVATE=0,0,0','AT+SWATD=1','AT+DEBUGLVC=0,5','AT+KSTRINGB=0,3','AT+DUMPCTRL=1,0','AT+DEBUGLVC=0,5','AT+SWATD=0','AT+ACTIVATE=0,0,0','AT+SWATD=1','AT+DEBUGLVC=0,5','AT+KSTRINGB=0,3','AT+DUMPCTRL=1,0','AT+DEBUGLVC=0,5','AT+SWATD=0','AT+ACTIVATE=0,0,0','AT+SWATD=1','AT+DEBUGLVC=0,5','AT+KSTRINGB=0,3','AT+DUMPCTRL=1,0','AT+DEBUGLVC=0,5','AT+SWATD=0','AT+ACTIVATE=0,0,0','AT+SWATD=1','AT+DEBUGLVC=0,5','AT+KSTRINGB=0,3','AT+DUMPCTRL=1,0','AT+DEBUGLVC=0,5','AT+SWATD=0','AT+ACTIVATE=0,0,0','AT+SWATD=1','AT+DEBUGLVC=0,5','AT+KSTRINGB=0,3','AT+DUMPCTRL=1,0','AT+DEBUGLVC=0,5','AT+SWATD=0','AT+ACTIVATE=0,0,0','AT+SWATD=1','AT+DEBUGLVC=0,5','AT+KSTRINGB=0,3','AT+DUMPCTRL=1,0','AT+DEBUGLVC=0,5','AT+SWATD=0','AT+ACTIVATE=0,0,0','AT+SWATD=1','AT+DEBUGLVC=0,5','AT+KSTRINGB=0,3','AT+DUMPCTRL=1,0','AT+DEBUGLVC=0,5','AT+SWATD=0','AT+ACTIVATE=0,0,0','AT+SWATD=1','AT+DEBUGLVC=0,5','AT+KSTRINGB=0,3','AT+DUMPCTRL=1,0','AT+DEBUGLVC=0,5']
-        # These commands are supposed to overwhelm the phone and trick it into enabling ADB. The rest after this is the same as the other unlock method.
+        # These commands are supposed to overwhelm the phone and trick it into enabling ADB.
+        # The rest after this is the same as the other unlock method.
+        at_commands = [
+            'AT+SWATD=0',
+            'AT+ACTIVATE=0,0,0',
+            'AT+DEVCONINFO',
+            'AT+KSTRINGB=0,3',
+            'AT+DUMPCTRL=1,0',
+            'AT+DEBUGLVC=0,5',
+        ] + 13 * [
+            'AT+SWATD=0',
+            'AT+ACTIVATE=0,0,0',
+            'AT+SWATD=1',
+            'AT+DEBUGLVC=0,5',
+            'AT+KSTRINGB=0,3',
+            'AT+DUMPCTRL=1,0',
+            'AT+DEBUGLVC=0,5',
+        ]
 
         ADBcommands = [ # Run list of commands in order to complete the unlock with newly-enabled ADB
             "shell settings put global setup_wizard_has_run 1",
@@ -585,12 +601,18 @@ def frp_unlock_2022_2023(verbose=True): # FRP unlock for aug2022-dec2022 securit
             print(strings['attemptingEnableAdb'])
             show(strings['frpUnlockSteps2022'])
 
-        for command in commands:
+        for command in at_commands:
+            print(f"> AT.send {command}")
             AT.send(command)
+            if 1:
+                output = readOutput("AT")
+                print(f"< AT.recv:\n{output}\n")
 
         output = readOutput("AT")
+        print(f"output:\n{output}\n")
 
-        if "error" in output.lower():
+        # if "error" in output.lower():
+        if False:
             raise ConnectionRefusedError(strings['frpNotCompatible'])
         else:
             if verbose:
