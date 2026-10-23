@@ -250,27 +250,38 @@ elif os_config == "LINUX":
 
 class AT:
     def send(command, not_first=False):
-        # Making usbsend.py into a built-in class (SerialManager for Linux, or SerialManagerWindows for Windows) improves command speed by 10-20x, and improves multi-OS compatibility
+        # Making usbsend.py into a built-in class
+        # (SerialManager for Linux, or SerialManagerWindows for Windows)
+        # improves command speed by 10-20x,
+        # and improves multi-OS compatibility
         rt()
         if not_first:
+            print(f"AT.send: reset")
             serman.reset()
         with open("tmp_output.txt", "w", encoding="utf-8") as f:
             try:
+                print(f"AT.send: command: {command!r}")
                 result = serman.send(command)
                 if result is None:
                     result = serman.send(command)
                     if result is None: # (If result is STILL None)
                         result = "" # Then give up after the second try.
+                if result != "":
+                    print(f"AT.send: result: {result!r}")
                 f.write(result)
             except Exception: # If the connection isn't there, reset to attempt to gain the connection back
+                print(f"AT.send: reset")
                 serman.reset()
                 time.sleep(1) 
                 try:
+                    print(f"AT.send: command: {command!r}")
                     result = serman.send(command)
                     if result is None:
                         result = serman.send(command)
                         if result is None: # (If result is STILL None)
                             result = "" # Then give up after the second try.
+                    if result != "":
+                        print(f"AT.send: result: {result!r}")
                     f.write(result)
                 except Exception:
                     # Device must not be plugged in?
