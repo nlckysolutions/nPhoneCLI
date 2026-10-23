@@ -140,6 +140,7 @@ class SerialManager: # AT command sender via class
             return ports[0] if ports else None
         else:  # Linux
             ports = glob.glob("/dev/ttyACM*") + glob.glob("/dev/ttyUSB*")
+            print(f"detect_port: ports: {ports}")
             return ports[0] if ports else None
 
         return None
