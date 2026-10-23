@@ -894,6 +894,7 @@ def is_root():
     elif os_config == "LINUX":  # POSIX (Linux, macOS, etc)
         return os.geteuid() == 0
 
+r'''
 # Check if nPhoneCLI will be able to use serial ports:
 
 if os_config == "LINUX":
@@ -903,3 +904,4 @@ elif os_config == "WINDOWS":
     if not is_root():
         if not debugMode:
             raise PermissionError(strings['sudoReqdError'])
+'''
